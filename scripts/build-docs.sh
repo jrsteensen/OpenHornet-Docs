@@ -5,6 +5,18 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PUBLIC_DIR="${ROOT}/public"
 SOFTWARE_SRC="${ROOT}/sources/software"
 HARDWARE_SRC="${ROOT}/sources/hardware"
+DOXYGEN_BIN="${DOXYGEN_BIN:-}"
+
+if [[ -z "${DOXYGEN_BIN}" ]]; then
+  if command -v doxygen >/dev/null 2>&1; then
+    DOXYGEN_BIN="doxygen"
+  elif command -v doxygen.exe >/dev/null 2>&1; then
+    DOXYGEN_BIN="doxygen.exe"
+  else
+    echo "Doxygen is required but was not found in PATH." >&2
+    exit 1
+  fi
+fi
 
 require_path() {
   local path="$1"
@@ -43,7 +55,7 @@ echo "Building software docs (${software_version})"
 rm -rf "${SOFTWARE_SRC}/docs/html"
 (
   cd "${SOFTWARE_SRC}/docs"
-  PROJECT_VERSION="${software_version}" doxygen Doxyfile
+  PROJECT_VERSION="${software_version}" "${DOXYGEN_BIN}" Doxyfile
 )
 require_path "${SOFTWARE_SRC}/docs/html/index.html"
 rsync -a --delete "${SOFTWARE_SRC}/docs/html/" "${PUBLIC_DIR}/software/"
@@ -55,7 +67,7 @@ rsync -a "${SOFTWARE_SRC}/docs/css/" "${HARDWARE_SRC}/docs/_doxygen/css/"
 rsync -a "${SOFTWARE_SRC}/docs/img/logos/" "${HARDWARE_SRC}/docs/_doxygen/img/logos/"
 (
   cd "${HARDWARE_SRC}/docs"
-  PROJECT_VERSION="${hardware_version}" doxygen Doxyfile
+  PROJECT_VERSION="${hardware_version}" "${DOXYGEN_BIN}" Doxyfile
 )
 require_path "${HARDWARE_SRC}/docs/html/index.html"
 rsync -a --delete "${HARDWARE_SRC}/docs/html/" "${PUBLIC_DIR}/hardware/"
