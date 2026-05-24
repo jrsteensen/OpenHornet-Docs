@@ -101,6 +101,25 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
       name="description"
       content="Generated OpenHornet hardware and software documentation, release references, and builder resources."
     >
+    <script>
+      (function () {
+        const storageKey = "openhornet-theme";
+        const root = document.documentElement;
+
+        function getStoredTheme() {
+          try {
+            const theme = window.localStorage.getItem(storageKey);
+            return theme === "dark" || theme === "light" ? theme : "";
+          } catch (error) {
+            return "";
+          }
+        }
+
+        const theme = getStoredTheme() || "light";
+        root.dataset.theme = theme;
+        root.style.colorScheme = theme;
+      })();
+    </script>
     <style>
       :root {
         color-scheme: light;
@@ -115,32 +134,40 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         --signal-dark: #8b6617;
         --green: #2f6b62;
         --blue: #17465a;
+        --link-underline: rgba(213, 167, 44, 0.8);
         --footer-bg: #171b1f;
         --footer-ink: rgba(255, 255, 255, 0.78);
+        --footer-link: rgba(255, 255, 255, 0.88);
         --shadow: 0 18px 55px rgba(23, 27, 31, 0.12);
+        --card-hover-shadow: 0 16px 32px rgba(23, 27, 31, 0.08);
+        --header-bg: rgba(255, 255, 255, 0.92);
+        --header-line: rgba(217, 223, 213, 0.9);
         --logo-filter: none;
         --radius: 8px;
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          color-scheme: dark;
-          --ink: #f2f5ef;
-          --muted: #b8c4bd;
-          --surface: #151a1b;
-          --surface-soft: #0e1213;
-          --surface-warm: #2a2418;
-          --surface-green: #152520;
-          --line: #303a38;
-          --signal: #e4bb4e;
-          --signal-dark: #f0d37d;
-          --green: #78c9b9;
-          --blue: #89cfe1;
-          --footer-bg: #0b0f10;
-          --footer-ink: rgba(255, 255, 255, 0.76);
-          --shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
-          --logo-filter: brightness(0) invert(1);
-        }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --ink: #f2f5ef;
+        --muted: #b8c4bd;
+        --surface: #151a1b;
+        --surface-soft: #0e1213;
+        --surface-warm: #2a2418;
+        --surface-green: #152520;
+        --line: #303a38;
+        --signal: #e4bb4e;
+        --signal-dark: #f0d37d;
+        --green: #78c9b9;
+        --blue: #89cfe1;
+        --link-underline: rgba(228, 187, 78, 0.82);
+        --footer-bg: #0b0f10;
+        --footer-ink: rgba(255, 255, 255, 0.76);
+        --footer-link: rgba(255, 255, 255, 0.9);
+        --shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
+        --card-hover-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
+        --header-bg: rgba(18, 22, 23, 0.92);
+        --header-line: rgba(48, 58, 56, 0.9);
+        --logo-filter: brightness(0) invert(1);
       }
 
       * {
@@ -153,6 +180,7 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         color: var(--ink);
         font: 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         text-rendering: optimizeLegibility;
+        transition: background-color 180ms ease, color 180ms ease;
       }
 
       img {
@@ -162,7 +190,7 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
 
       a {
         color: inherit;
-        text-decoration-color: rgba(213, 167, 44, 0.8);
+        text-decoration-color: var(--link-underline);
         text-decoration-thickness: 0.1em;
         text-underline-offset: 0.18em;
       }
@@ -176,20 +204,25 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         outline-offset: 4px;
       }
 
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
       .site-header {
         position: sticky;
         top: 0;
         z-index: 10;
-        border-bottom: 1px solid rgba(217, 223, 213, 0.9);
-        background: rgba(255, 255, 255, 0.92);
+        border-bottom: 1px solid var(--header-line);
+        background: var(--header-bg);
         backdrop-filter: blur(16px);
-      }
-
-      @media (prefers-color-scheme: dark) {
-        .site-header {
-          border-bottom-color: rgba(48, 58, 56, 0.9);
-          background: rgba(18, 22, 23, 0.92);
-        }
       }
 
       .nav-wrap,
@@ -216,6 +249,91 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
       .brand img {
         width: 260px;
         filter: var(--logo-filter);
+      }
+
+      .nav-controls {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .theme-toggle {
+        flex: 0 0 auto;
+        width: 54px;
+        height: 36px;
+        display: inline-grid;
+        place-items: center;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--ink);
+        cursor: pointer;
+        transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+      }
+
+      .theme-toggle:hover {
+        border-color: var(--signal);
+        transform: translateY(-1px);
+      }
+
+      .theme-toggle__track {
+        position: relative;
+        display: block;
+        width: 44px;
+        height: 24px;
+      }
+
+      .theme-toggle__icon,
+      .theme-toggle__thumb {
+        position: absolute;
+        top: 50%;
+        border-radius: 999px;
+        transform: translateY(-50%);
+      }
+
+      .theme-toggle__icon {
+        width: 14px;
+        height: 14px;
+        opacity: 0.6;
+        transition: opacity 180ms ease;
+      }
+
+      .theme-toggle__sun {
+        left: 5px;
+        background: currentColor;
+        box-shadow:
+          0 -5px 0 -4px currentColor,
+          0 5px 0 -4px currentColor,
+          5px 0 0 -4px currentColor,
+          -5px 0 0 -4px currentColor;
+      }
+
+      .theme-toggle__moon {
+        right: 5px;
+        background: transparent;
+        box-shadow: inset -5px 0 0 currentColor;
+      }
+
+      .theme-toggle__thumb {
+        left: 2px;
+        z-index: 1;
+        width: 20px;
+        height: 20px;
+        background: var(--signal);
+        box-shadow: 0 2px 8px rgba(23, 27, 31, 0.22);
+        transition: transform 180ms ease, background-color 180ms ease;
+      }
+
+      :root[data-theme="dark"] .theme-toggle__thumb {
+        transform: translate(20px, -50%);
+      }
+
+      :root[data-theme="dark"] .theme-toggle__moon,
+      :root[data-theme="light"] .theme-toggle__sun {
+        opacity: 0.95;
       }
 
       .nav-links {
@@ -357,7 +475,7 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
       .card:hover,
       .card:focus-visible {
         border-color: var(--signal);
-        box-shadow: var(--shadow);
+        box-shadow: var(--card-hover-shadow);
         color: inherit;
       }
 
@@ -472,7 +590,7 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
       }
 
       .site-footer a {
-        color: rgba(255, 255, 255, 0.9);
+        color: var(--footer-link);
       }
 
       @media (max-width: 900px) {
@@ -482,6 +600,11 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
           flex-direction: column;
           justify-content: center;
           padding: 14px 0;
+        }
+
+        .nav-controls {
+          align-items: flex-start;
+          justify-content: flex-start;
         }
 
         .hero,
@@ -520,6 +643,10 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         .btn {
           width: 100%;
         }
+
+        .nav-links {
+          justify-content: flex-start;
+        }
       }
     </style>
   </head>
@@ -529,13 +656,23 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         <a class="brand" href="https://openhornet.com/" aria-label="OpenHornet website">
           <img src="software/oh_horiz.svg" alt="OpenHornet">
         </a>
-        <nav class="nav-links" aria-label="Project links">
-          <a href="https://openhornet.com/">Website</a>
-          <a href="https://openhornet.com/start-here.html">Start Here</a>
-          <a href="https://github.com/jrsteensen/OpenHornet">GitHub</a>
-          <a href="https://discord.gg/openhornet">Discord</a>
-          <a href="https://openhornet.com/donate.html">Donate</a>
-        </nav>
+        <div class="nav-controls">
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode">
+            <span class="theme-toggle__track" aria-hidden="true">
+              <span class="theme-toggle__icon theme-toggle__sun"></span>
+              <span class="theme-toggle__icon theme-toggle__moon"></span>
+              <span class="theme-toggle__thumb"></span>
+            </span>
+            <span class="sr-only" data-theme-toggle-label>Switch to dark mode</span>
+          </button>
+          <nav class="nav-links" aria-label="Project links">
+            <a href="https://openhornet.com/">Website</a>
+            <a href="https://openhornet.com/start-here.html">Start Here</a>
+            <a href="https://github.com/jrsteensen/OpenHornet">GitHub</a>
+            <a href="https://discord.gg/openhornet">Discord</a>
+            <a href="https://openhornet.com/donate.html">Donate</a>
+          </nav>
+        </div>
       </div>
     </header>
 
@@ -649,6 +786,67 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         <a href="https://openhornet.com/start-here.html">Start the build</a>
       </div>
     </footer>
+    <script>
+      (function () {
+        const storageKey = "openhornet-theme";
+        const toggles = Array.from(document.querySelectorAll("[data-theme-toggle]"));
+
+        function getStoredTheme() {
+          try {
+            const theme = window.localStorage.getItem(storageKey);
+            return theme === "dark" || theme === "light" ? theme : "";
+          } catch (error) {
+            return "";
+          }
+        }
+
+        function storeTheme(theme) {
+          try {
+            window.localStorage.setItem(storageKey, theme);
+          } catch (error) {
+            // Theme persistence is optional; the active page can still update.
+          }
+        }
+
+        function applyTheme(theme) {
+          const resolvedTheme = theme === "dark" ? "dark" : "light";
+          document.documentElement.dataset.theme = resolvedTheme;
+          document.documentElement.style.colorScheme = resolvedTheme;
+          return resolvedTheme;
+        }
+
+        function syncThemeControls(theme) {
+          const label = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+
+          toggles.forEach((toggle) => {
+            toggle.setAttribute("aria-label", label);
+            toggle.setAttribute("aria-pressed", String(theme === "dark"));
+            toggle.setAttribute("title", label);
+
+            const textLabel = toggle.querySelector("[data-theme-toggle-label]");
+            if (textLabel) {
+              textLabel.textContent = label;
+            }
+          });
+        }
+
+        if (!toggles.length) {
+          return;
+        }
+
+        let activeTheme = applyTheme(getStoredTheme() || "light");
+        syncThemeControls(activeTheme);
+
+        toggles.forEach((toggle) => {
+          toggle.addEventListener("click", () => {
+            activeTheme = activeTheme === "dark" ? "light" : "dark";
+            storeTheme(activeTheme);
+            applyTheme(activeTheme);
+            syncThemeControls(activeTheme);
+          });
+        });
+      })();
+    </script>
   </body>
 </html>
 HTML
