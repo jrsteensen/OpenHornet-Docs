@@ -721,7 +721,7 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         </a>
       </section>
 
-      <section class="section">
+<!--      <section class="section">
         <div class="section-head">
           <div>
             <p class="eyebrow">Documentation areas</p>
@@ -745,7 +745,7 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
             <span class="meta">Open software documentation</span>
           </a>
         </div>
-      </section>
+      </section> -->
 
       <section class="section">
         <div class="section-head">
