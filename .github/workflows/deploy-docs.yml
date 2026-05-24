@@ -1,0 +1,69 @@
+name: Build and Deploy Docs
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [docs-source-updated]
+  schedule:
+    - cron: "17 8 * * *"
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: openhornet-docs
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout docs deployment repo
+        uses: actions/checkout@v4
+
+      - name: Checkout software source
+        uses: actions/checkout@v4
+        with:
+          repository: jrsteensen/OpenHornet-Software
+          ref: ${{ github.event.client_payload.software_ref || 'main' }}
+          path: sources/software
+          sparse-checkout: |
+            README.md
+            docs
+            embedded
+
+      - name: Checkout hardware source
+        uses: actions/checkout@v4
+        with:
+          repository: jrsteensen/OpenHornet
+          ref: ${{ github.event.client_payload.hardware_ref || 'master' }}
+          path: sources/hardware
+          sparse-checkout: |
+            README.md
+            docs
+            images
+
+      - name: Install Doxygen tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz rsync
+
+      - name: Build documentation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/build-docs.sh
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openhornet-docs
+          path: public
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy public --project-name=openhornet-docs
