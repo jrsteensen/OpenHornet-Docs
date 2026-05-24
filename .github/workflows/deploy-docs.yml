@@ -33,6 +33,7 @@ jobs:
             README.md
             docs
             embedded
+          sparse-checkout-cone-mode: false
 
       - name: Checkout hardware source
         uses: actions/checkout@v4
@@ -44,6 +45,7 @@ jobs:
             README.md
             docs
             images
+          sparse-checkout-cone-mode: false
 
       - name: Install Doxygen tooling
         run: |
