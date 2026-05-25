@@ -26,6 +26,27 @@ require_path() {
   fi
 }
 
+normalize_github_blob_asset_urls() {
+  local html_dir="$1"
+  local file
+  local tmp_file
+
+  while IFS= read -r -d '' file; do
+    tmp_file="${file}.tmp"
+    sed \
+      -e 's|src="https://github.com/jrsteensen/OpenHornet/blob/master/|src="https://raw.githubusercontent.com/jrsteensen/OpenHornet/master/|g' \
+      -e 's|src="https://github.com/jrsteensen/OpenHornet/blob/main/|src="https://raw.githubusercontent.com/jrsteensen/OpenHornet/main/|g' \
+      -e "s|src='https://github.com/jrsteensen/OpenHornet/blob/master/|src='https://raw.githubusercontent.com/jrsteensen/OpenHornet/master/|g" \
+      -e "s|src='https://github.com/jrsteensen/OpenHornet/blob/main/|src='https://raw.githubusercontent.com/jrsteensen/OpenHornet/main/|g" \
+      -e 's|src="https://github.com/jrsteensen/OpenHornet-Software/blob/master/|src="https://raw.githubusercontent.com/jrsteensen/OpenHornet-Software/master/|g' \
+      -e 's|src="https://github.com/jrsteensen/OpenHornet-Software/blob/main/|src="https://raw.githubusercontent.com/jrsteensen/OpenHornet-Software/main/|g' \
+      -e "s|src='https://github.com/jrsteensen/OpenHornet-Software/blob/master/|src='https://raw.githubusercontent.com/jrsteensen/OpenHornet-Software/master/|g" \
+      -e "s|src='https://github.com/jrsteensen/OpenHornet-Software/blob/main/|src='https://raw.githubusercontent.com/jrsteensen/OpenHornet-Software/main/|g" \
+      "${file}" > "${tmp_file}"
+    mv "${tmp_file}" "${file}"
+  done < <(find "${html_dir}" -type f -name '*.html' -print0)
+}
+
 latest_release_tag() {
   local repo="$1"
   local fallback_dir="$2"
@@ -76,6 +97,7 @@ rm -rf "${SOFTWARE_SRC}/docs/html"
   PROJECT_VERSION="${software_version}" "${DOXYGEN_BIN}" Doxyfile
 )
 require_path "${SOFTWARE_SRC}/docs/html/index.html"
+normalize_github_blob_asset_urls "${SOFTWARE_SRC}/docs/html"
 rsync -a --delete "${SOFTWARE_SRC}/docs/html/" "${PUBLIC_DIR}/software/"
 
 echo "Building hardware docs (${hardware_version})"
@@ -88,6 +110,7 @@ rsync -a "${SOFTWARE_SRC}/docs/img/logos/" "${HARDWARE_SRC}/docs/_doxygen/img/lo
   PROJECT_VERSION="${hardware_version}" "${DOXYGEN_BIN}" Doxyfile
 )
 require_path "${HARDWARE_SRC}/docs/html/index.html"
+normalize_github_blob_asset_urls "${HARDWARE_SRC}/docs/html"
 rsync -a --delete "${HARDWARE_SRC}/docs/html/" "${PUBLIC_DIR}/hardware/"
 
 cat > "${PUBLIC_DIR}/index.html" <<'HTML'
