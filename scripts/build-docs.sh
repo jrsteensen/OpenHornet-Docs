@@ -681,19 +681,18 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         <div>
           <p class="eyebrow">Technical documentation</p>
           <h1>OpenHornet Documentation</h1>
-          <p class="lead">Generated reference material for the OpenHornet hardware and software repositories, with quick paths for builders, contributors, and maintainers.</p>
-          <div class="action-row" aria-label="Primary documentation links">
+          <p class="lead">Generated reference material for the OpenHornet hardware and software repositories, including tutorials, software guides, API references, and more.</p>
+<!--          <div class="action-row" aria-label="Primary documentation links">
             <a class="btn signal" href="hardware/">Open hardware docs</a>
             <a class="btn secondary" href="software/">Open software docs</a>
             <a class="btn secondary" href="https://openhornet.com/start-here.html">Start the build</a>
-          </div>
+          </div> -->
         </div>
         <aside class="panel" aria-label="Builder support">
           <strong>Need help while building?</strong>
           <p>The OpenHornet Discord is the fastest path to builder support, project discussion, and community troubleshooting.</p>
           <div class="action-row">
             <a class="btn secondary" href="https://discord.gg/openhornet">Join Discord</a>
-            <a class="btn secondary" href="https://github.com/jrsteensen/OpenHornet/issues">File an issue</a>
           </div>
         </aside>
       </section>
@@ -709,15 +708,15 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
           <span class="value">__SOFTWARE_VERSION__</span>
           <p>Firmware, sketches, libraries, classes, files, and API reference.</p>
         </a>
-        <a class="stat" href="https://discord.gg/openhornet">
-          <span class="label">Community</span>
-          <span class="value">Discord</span>
-          <p>Ask questions, share progress, and connect with other builders.</p>
+        <a class="stat" href="https://github.com/jrsteensen/OpenHornet/issues">
+          <span class="label">GitHub</span>
+          <span class="value">Hardware issues</span>
+          <p>Report hardware issues and track their resolution on GitHub.</p>
         </a>
-        <a class="stat" href="https://github.com/jrsteensen/OpenHornet/releases/latest">
-          <span class="label">Latest release</span>
-          <span class="value">Download</span>
-          <p>Get the current OpenHornet hardware release package from GitHub.</p>
+        <a class="stat" href="https://github.com/jrsteensen/OpenHornet-Software/issues">
+          <span class="label">GitHub</span>
+          <span class="value">Software issues</span>
+          <p>Report software issues and track their resolution on GitHub.</p>
         </a>
       </section>
 
