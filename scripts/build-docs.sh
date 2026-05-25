@@ -47,6 +47,52 @@ normalize_github_blob_asset_urls() {
   done < <(find "${html_dir}" -type f -name '*.html' -print0)
 }
 
+doxygen_cache_bust_key() {
+  local source_dir="$1"
+  local docs_sha
+  local source_sha
+  local key
+
+  docs_sha="$(git -C "${ROOT}" rev-parse --short=12 HEAD 2>/dev/null || true)"
+  source_sha="$(git -C "${source_dir}" rev-parse --short=12 HEAD 2>/dev/null || true)"
+  key="${docs_sha:-local}-${source_sha:-source}"
+
+  printf '%s' "${key}" | tr -c 'A-Za-z0-9._-' '-'
+}
+
+version_doxygen_asset_urls() {
+  local html_dir="$1"
+  local cache_bust="$2"
+  local query="?v=${cache_bust}"
+  local file
+  local tmp_file
+
+  while IFS= read -r -d '' file; do
+    tmp_file="${file}.tmp"
+    sed \
+      -e "s|\\(src=\"[^\"]*\\.js\\)\"|\\1${query}\"|g" \
+      -e "s|\\(href=\"[^\"]*\\.css\\)\"|\\1${query}\"|g" \
+      "${file}" > "${tmp_file}"
+    mv "${tmp_file}" "${file}"
+  done < <(find "${html_dir}" -type f -name '*.html' -print0)
+
+  if [[ -f "${html_dir}/navtree.js" ]]; then
+    tmp_file="${html_dir}/navtree.js.tmp"
+    sed \
+      -e "s|script.src = scriptName+'\\.js';|script.src = scriptName+'.js${query}';|g" \
+      "${html_dir}/navtree.js" > "${tmp_file}"
+    mv "${tmp_file}" "${html_dir}/navtree.js"
+  fi
+
+  if [[ -f "${html_dir}/search/search.js" ]]; then
+    tmp_file="${html_dir}/search/search.js.tmp"
+    sed \
+      -e "s|scriptTag.src = url;|scriptTag.src = url + '${query}';|g" \
+      "${html_dir}/search/search.js" > "${tmp_file}"
+    mv "${tmp_file}" "${html_dir}/search/search.js"
+  fi
+}
+
 latest_release_tag() {
   local repo="$1"
   local fallback_dir="$2"
@@ -98,6 +144,7 @@ rm -rf "${SOFTWARE_SRC}/docs/html"
 )
 require_path "${SOFTWARE_SRC}/docs/html/index.html"
 normalize_github_blob_asset_urls "${SOFTWARE_SRC}/docs/html"
+version_doxygen_asset_urls "${SOFTWARE_SRC}/docs/html" "$(doxygen_cache_bust_key "${SOFTWARE_SRC}")"
 rsync -a --delete "${SOFTWARE_SRC}/docs/html/" "${PUBLIC_DIR}/software/"
 
 echo "Building hardware docs (${hardware_version})"
@@ -111,6 +158,7 @@ rsync -a "${SOFTWARE_SRC}/docs/img/logos/" "${HARDWARE_SRC}/docs/_doxygen/img/lo
 )
 require_path "${HARDWARE_SRC}/docs/html/index.html"
 normalize_github_blob_asset_urls "${HARDWARE_SRC}/docs/html"
+version_doxygen_asset_urls "${HARDWARE_SRC}/docs/html" "$(doxygen_cache_bust_key "${HARDWARE_SRC}")"
 rsync -a --delete "${HARDWARE_SRC}/docs/html/" "${PUBLIC_DIR}/hardware/"
 
 cat > "${PUBLIC_DIR}/index.html" <<'HTML'
