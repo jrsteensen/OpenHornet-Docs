@@ -135,6 +135,7 @@ mkdir -p "${PUBLIC_DIR}/software" "${PUBLIC_DIR}/hardware"
 
 software_version="$(latest_release_tag "jrsteensen/OpenHornet-Software" "${SOFTWARE_SRC}")"
 hardware_version="$(latest_release_tag "jrsteensen/OpenHornet" "${HARDWARE_SRC}")"
+current_year="$(date +%Y)"
 
 echo "Building software docs (${software_version})"
 rm -rf "${SOFTWARE_SRC}/docs/html"
@@ -209,6 +210,8 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         --footer-bg: #171b1f;
         --footer-ink: rgba(255, 255, 255, 0.78);
         --footer-link: rgba(255, 255, 255, 0.88);
+        --footer-muted: rgba(255, 255, 255, 0.62);
+        --footer-line: rgba(255, 255, 255, 0.12);
         --shadow: 0 18px 55px rgba(23, 27, 31, 0.12);
         --card-hover-shadow: 0 16px 32px rgba(23, 27, 31, 0.08);
         --header-bg: rgba(255, 255, 255, 0.92);
@@ -234,6 +237,8 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         --footer-bg: #0b0f10;
         --footer-ink: rgba(255, 255, 255, 0.76);
         --footer-link: rgba(255, 255, 255, 0.9);
+        --footer-muted: rgba(255, 255, 255, 0.58);
+        --footer-line: rgba(255, 255, 255, 0.14);
         --shadow: 0 18px 55px rgba(0, 0, 0, 0.45);
         --card-hover-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
         --header-bg: rgba(18, 22, 23, 0.92);
@@ -431,6 +436,41 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
       .nav-links a:focus-visible {
         background: var(--surface-warm);
         color: var(--ink);
+      }
+
+      .social-links {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .social-link {
+        width: 40px;
+        height: 40px;
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface-soft);
+        color: var(--ink);
+        text-decoration: none;
+        transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+      }
+
+      .social-link:hover,
+      .social-link:focus-visible {
+        border-color: var(--ink);
+        background: var(--ink);
+        color: var(--surface);
+        transform: translateY(-1px);
+      }
+
+      .social-link svg {
+        width: 19px;
+        height: 19px;
+        fill: currentColor;
       }
 
       main {
@@ -653,10 +693,8 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
 
       .site-footer .inner {
         min-height: 84px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
+        display: grid;
+        gap: 18px;
         padding: 24px 0;
       }
 
@@ -664,13 +702,40 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
         color: var(--footer-link);
       }
 
+      .site-footer p {
+        color: inherit;
+      }
+
+      .footer-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .footer-bottom {
+        margin: 0;
+        padding-top: 18px;
+        border-top: 1px solid var(--footer-line);
+        color: var(--footer-muted);
+        font-size: 0.92rem;
+      }
+
       @media (max-width: 900px) {
-        .nav-wrap,
-        .site-footer .inner {
+        .nav-wrap {
           align-items: flex-start;
           flex-direction: column;
           justify-content: center;
           padding: 14px 0;
+        }
+
+        .site-footer .inner {
+          padding: 24px 0;
+        }
+
+        .footer-main {
+          align-items: flex-start;
+          flex-direction: column;
         }
 
         .nav-controls {
@@ -715,7 +780,8 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
           width: 100%;
         }
 
-        .nav-links {
+        .nav-links,
+        .social-links {
           justify-content: flex-start;
         }
       }
@@ -728,6 +794,13 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
           <img src="software/oh_horiz.svg" alt="OpenHornet">
         </a>
         <div class="nav-controls">
+          <nav class="nav-links" aria-label="Project links">
+            <a href="https://openhornet.com/">Website</a>
+            <a href="https://openhornet.com/start-here.html">Start Here</a>
+            <a href="https://github.com/jrsteensen/OpenHornet">GitHub</a>
+            <a href="https://discord.gg/openhornet">Discord</a>
+            <a href="https://openhornet.com/donate.html">Donate</a>
+          </nav>
           <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode">
             <span class="theme-toggle__track" aria-hidden="true">
               <span class="theme-toggle__icon theme-toggle__sun"></span>
@@ -736,12 +809,25 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
             </span>
             <span class="sr-only" data-theme-toggle-label>Switch to dark mode</span>
           </button>
-          <nav class="nav-links" aria-label="Project links">
-            <a href="https://openhornet.com/">Website</a>
-            <a href="https://openhornet.com/start-here.html">Start Here</a>
-            <a href="https://github.com/jrsteensen/OpenHornet">GitHub</a>
-            <a href="https://discord.gg/openhornet">Discord</a>
-            <a href="https://openhornet.com/donate.html">Donate</a>
+          <nav class="social-links" aria-label="Social links">
+            <a class="social-link" href="https://discord.gg/openhornet" target="_blank" rel="noopener" aria-label="Join OpenHornet on Discord">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"></path>
+              </svg>
+              <span class="sr-only">Discord</span>
+            </a>
+            <a class="social-link" href="https://www.youtube.com/@OpenHornet" target="_blank" rel="noopener" aria-label="OpenHornet on YouTube">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path>
+              </svg>
+              <span class="sr-only">YouTube</span>
+            </a>
+            <a class="social-link" href="https://www.facebook.com/profile.php?id=100092714572837" target="_blank" rel="noopener" aria-label="OpenHornet on Facebook">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 011.141.195v3.325a8.623 8.623 0 00-.653-.036 26.805 26.805 0 00-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 00-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"></path>
+              </svg>
+              <span class="sr-only">Facebook</span>
+            </a>
           </nav>
         </div>
       </div>
@@ -852,8 +938,14 @@ cat > "${PUBLIC_DIR}/index.html" <<'HTML'
 
     <footer class="site-footer">
       <div class="inner">
-        <p>Generated documentation for OpenHornet hardware and software.</p>
-        <a href="https://openhornet.com/start-here.html">Start the build</a>
+        <div class="footer-main">
+          <p>Generated documentation for OpenHornet hardware and software.</p>
+          <a href="https://openhornet.com/start-here.html">Start the build</a>
+        </div>
+        <p class="footer-bottom">
+          Copyright &copy; 2016 - __CURRENT_YEAR__ OpenHornet. OpenHornet works are licensed under
+          <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>.
+        </p>
       </div>
     </footer>
     <script>
@@ -924,6 +1016,7 @@ HTML
 sed \
   -e "s|__HARDWARE_VERSION__|${hardware_version}|g" \
   -e "s|__SOFTWARE_VERSION__|${software_version}|g" \
+  -e "s|__CURRENT_YEAR__|${current_year}|g" \
   "${PUBLIC_DIR}/index.html" > "${PUBLIC_DIR}/index.html.tmp"
 mv "${PUBLIC_DIR}/index.html.tmp" "${PUBLIC_DIR}/index.html"
 
